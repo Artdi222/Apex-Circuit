@@ -39,6 +39,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
+import { useSettings } from "@/hooks/use-settings"
+import { useEffect } from "react"
 
 interface AddSlotValues {
   date: Date
@@ -56,6 +58,19 @@ const addSlotSchema = z.object({
   end_time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Must be in HH:MM format"),
   slot_type: z.enum(["open", "exclusive", "maintenance"]),
   max_capacity: z.number().min(1).max(50),
+}).superRefine((data, ctx) => {
+  const [startH, startM] = data.start_time.split(':').map(Number);
+  const [endH, endM] = data.end_time.split(':').map(Number);
+  const startTotal = startH * 60 + startM;
+  const endTotal = endH * 60 + endM;
+
+  if (endTotal <= startTotal) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "End time must be after start time",
+      path: ["end_time"],
+    });
+  }
 })
 
 export function AddSlotDialog({
@@ -69,16 +84,50 @@ export function AddSlotDialog({
   onSubmit: (values: AddSlotValues) => Promise<void>
   isLoading: boolean
 }) {
+  const { getSetting } = useSettings();
+  const defaultCapacity = getSetting('schedule.default_max_capacity', 6);
+  const defaultStartTime = getSetting('schedule.default_start_time', '09:00');
+  const defaultEndTime = getSetting('schedule.default_end_time', '10:00');
+  const defaultDuration = getSetting('schedule.default_slot_duration_minutes', 60);
+
   const form = useForm<AddSlotValues>({
     resolver: zodResolver(addSlotSchema),
     defaultValues: {
       date: new Date(),
-      start_time: "09:00",
-      end_time: "10:00",
+      start_time: defaultStartTime,
+      end_time: defaultEndTime,
       slot_type: "open",
-      max_capacity: 6,
+      max_capacity: defaultCapacity,
     },
   })
+
+  // Update default values when settings load
+  useEffect(() => {
+    form.reset({
+      ...form.getValues(),
+      max_capacity: defaultCapacity,
+      start_time: defaultStartTime,
+      end_time: defaultEndTime,
+    });
+  }, [defaultCapacity, defaultStartTime, defaultEndTime]);
+
+  const handleStartTimeChange = (startTime: string) => {
+    form.setValue('start_time', startTime);
+    
+    // Auto-calculate end time based on duration
+    try {
+      const [hours, mins] = startTime.split(':').map(Number);
+      if (!isNaN(hours) && !isNaN(mins)) {
+        const totalMins = hours * 60 + mins + defaultDuration;
+        const endH = Math.floor(totalMins / 60) % 24;
+        const endM = totalMins % 60;
+        const endTimeStr = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+        form.setValue('end_time', endTimeStr);
+      }
+    } catch (e) {
+      // Ignore invalid time format
+    }
+  };
 
   async function onFormSubmit(values: AddSlotValues) {
     await onSubmit(values)
@@ -144,7 +193,11 @@ export function AddSlotDialog({
                   <FormItem>
                     <FormLabel>Start Time</FormLabel>
                     <FormControl>
-                      <Input placeholder="09:00" {...field} />
+                      <Input 
+                        placeholder={defaultStartTime} 
+                        {...field} 
+                        onChange={(e) => handleStartTimeChange(e.target.value)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -157,7 +210,7 @@ export function AddSlotDialog({
                   <FormItem>
                     <FormLabel>End Time</FormLabel>
                     <FormControl>
-                      <Input placeholder="10:00" {...field} />
+                      <Input placeholder={defaultEndTime} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -239,6 +292,28 @@ const generateSlotsSchema = z.object({
   slot_type: z.enum(["open", "exclusive", "maintenance"]),
   max_capacity: z.number().min(1).max(50),
   days_of_week: z.array(z.number()).min(1, "Select at least one day"),
+}).superRefine((data, ctx) => {
+  const [startH, startM] = data.start_time.split(':').map(Number);
+  const [endH, endM] = data.end_time.split(':').map(Number);
+  const startTotal = startH * 60 + startM;
+  const endTotal = endH * 60 + endM;
+  const windowDuration = endTotal - startTotal;
+
+  if (windowDuration <= 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "End time must be after start time",
+      path: ["end_time"],
+    });
+  }
+
+  if (data.slot_duration_minutes > windowDuration) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Duration (${data.slot_duration_minutes}m) cannot be longer than the time window (${windowDuration}m)`,
+      path: ["slot_duration_minutes"],
+    });
+  }
 })
 
 export function GenerateSlotsDialog({
@@ -252,19 +327,35 @@ export function GenerateSlotsDialog({
   onSubmit: (values: GenerateSlotsValues) => Promise<void>
   isLoading: boolean
 }) {
+  const { getSetting } = useSettings();
+  const defaultDuration = getSetting('schedule.default_slot_duration_minutes', 60);
+  const defaultCapacity = getSetting('schedule.default_max_capacity', 6);
+  const defaultStartTime = getSetting('schedule.default_start_time', '08:00');
+  const defaultEndTime = getSetting('schedule.default_end_time', '17:00');
+
   const form = useForm<GenerateSlotsValues>({
     resolver: zodResolver(generateSlotsSchema),
     defaultValues: {
       date_from: new Date(),
       date_to: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      start_time: "08:00",
-      end_time: "17:00",
-      slot_duration_minutes: 60,
+      start_time: defaultStartTime,
+      end_time: defaultEndTime,
+      slot_duration_minutes: defaultDuration,
       slot_type: "open",
-      max_capacity: 6,
+      max_capacity: defaultCapacity,
       days_of_week: [1, 2, 3, 4, 5],
     },
   })
+
+  useEffect(() => {
+    form.reset({
+      ...form.getValues(),
+      slot_duration_minutes: defaultDuration,
+      max_capacity: defaultCapacity,
+      start_time: defaultStartTime,
+      end_time: defaultEndTime,
+    });
+  }, [defaultDuration, defaultCapacity, defaultStartTime, defaultEndTime]);
 
   async function onFormSubmit(values: GenerateSlotsValues) {
     await onSubmit(values)
@@ -383,7 +474,7 @@ export function GenerateSlotsDialog({
                   <FormItem>
                     <FormLabel>Daily Start Time</FormLabel>
                     <FormControl>
-                      <Input placeholder="08:00" {...field} />
+                      <Input placeholder={defaultStartTime} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -396,7 +487,7 @@ export function GenerateSlotsDialog({
                   <FormItem>
                     <FormLabel>Daily End Time</FormLabel>
                     <FormControl>
-                      <Input placeholder="17:00" {...field} />
+                      <Input placeholder={defaultEndTime} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

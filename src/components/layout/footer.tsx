@@ -3,9 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/shared/logo';
+import { useSettings } from '@/hooks/use-settings';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const { getSetting } = useSettings();
+  const siteName = getSetting('site.name', 'APEX Circuit Rentals');
+  const siteDesc = getSetting('site.description', 'Premium racing track rentals, vehicle fleet management, and professional equipment for the ultimate racing experience.');
 
   return (
     <footer className="bg-white border-t border-gray-100 pt-20 pb-10 mt-auto">
@@ -16,8 +20,7 @@ export function Footer() {
               <Logo size="sm" />
             </div>
             <p className="text-gray-500 max-w-sm leading-relaxed text-sm">
-              Premium racing track rentals, vehicle fleet management, and professional equipment 
-              for the ultimate racing experience.
+              {siteDesc}
             </p>
           </div>
           <div>
@@ -56,7 +59,7 @@ export function Footer() {
           </div>
         </div>
         <div className="pt-8 border-t border-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs font-medium text-gray-400">© {currentYear} APEX Circuit Rentals. All rights reserved.</p>
+          <p className="text-xs font-medium text-gray-400">© {currentYear} {siteName}. All rights reserved.</p>
           <div className="flex gap-8">
             <Link href="#" className="text-xs font-bold text-gray-400 hover:text-gray-900 transition-colors uppercase tracking-widest">Privacy</Link>
             <Link href="#" className="text-xs font-bold text-gray-400 hover:text-gray-900 transition-colors uppercase tracking-widest">Terms</Link>

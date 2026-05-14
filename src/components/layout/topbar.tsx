@@ -54,7 +54,6 @@ export function Topbar() {
               <Button variant="ghost" className="p-1 h-auto flex items-center space-x-3">
                 <div className="hidden sm:block text-right">
                   <p className="text-sm font-bold text-[#111827] leading-none">{user?.username}</p>
-                  <p className="text-xs text-[#6B7280] leading-none mt-1 capitalize">{user?.role}</p>
                 </div>
                 <Avatar className="h-9 w-9 border border-[#E5E7EB]">
                   <AvatarImage src={user?.avatar_url || ''} />

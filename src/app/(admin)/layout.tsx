@@ -85,7 +85,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-black text-gray-400 transform transition-transform duration-200 ease-in-out md:relative md:translate-x-0 flex flex-col shadow-2xl",
+          "fixed inset-y-0 left-0 z-50 w-64 bg-black text-gray-400 transform transition-transform duration-200 ease-in-out md:sticky md:top-0 md:h-screen md:translate-x-0 flex flex-col shadow-2xl",
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -95,25 +95,27 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`)
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={() => setIsSidebarOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all group",
-                  isActive
-                    ? "bg-white text-black shadow-lg"
-                    : "hover:bg-white/5 hover:text-white"
-                )}
-              >
-                <item.icon className={cn("h-4 w-4", isActive ? "text-black" : "group-hover:text-white")} />
-                {item.name}
-              </Link>
-            )
-          })}
+          {navItems
+            .filter((item) => item.name !== "Settings" || user.role === "superadmin")
+            .map((item) => {
+              const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`)
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setIsSidebarOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all group",
+                    isActive
+                      ? "bg-white text-black shadow-lg"
+                      : "hover:bg-white/5 hover:text-white"
+                  )}
+                >
+                  <item.icon className={cn("h-4 w-4", isActive ? "text-black" : "group-hover:text-white")} />
+                  {item.name}
+                </Link>
+              )
+            })}
         </nav>
 
         <div className="p-4 mt-auto border-t border-white/10 bg-white/[0.02]">

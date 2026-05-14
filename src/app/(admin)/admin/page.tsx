@@ -1,184 +1,243 @@
-"use client"
+"use client";
 
-import { StatsCard } from "@/components/admin/stats-card"
-import { 
-  Users, 
-  Calendar, 
-  DollarSign, 
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { StatsCard } from "@/components/admin/stats-card";
+import { RevenueChart } from "@/components/admin/revenue-chart";
+import { BookingChart } from "@/components/admin/booking-chart";
+import { ActiveSessions } from "@/components/admin/active-sessions";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  DollarSign,
+  Calendar,
+  Users,
   Activity,
-  ArrowUpRight,
   TrendingUp,
-  Clock,
-  QrCode,
-  CalendarDays,
   Car,
-  Settings
-} from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { cn } from "@/lib/utils"
+  Gauge,
+} from "lucide-react";
 
-export default function AdminDashboardPage() {
-  const stats = [
-    {
-      title: "Total Revenue",
-      value: "$12,450.00",
-      description: "Since last month",
-      icon: DollarSign,
-      trend: { value: 12, label: "from last month", isPositive: true }
-    },
-    {
-      title: "Active Bookings",
-      value: "42",
-      description: "Across all slots",
-      icon: Calendar,
-      trend: { value: 8, label: "from last week", isPositive: true }
-    },
-    {
-      title: "Active Users",
-      value: "1,240",
-      description: "Registered drivers",
-      icon: Users,
-      trend: { value: 15, label: "from last month", isPositive: true }
-    },
-    {
-      title: "Session Capacity",
-      value: "78%",
-      description: "Average utilization",
-      icon: Activity,
-      trend: { value: 2, label: "from last week", isPositive: false }
-    }
-  ]
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 
-  const recentBookings = [
-    { id: "1", user: "John Doe", vehicle: "Porsche 911 GT3", date: "2024-05-10", status: "confirmed", amount: "$450" },
-    { id: "2", user: "Jane Smith", vehicle: "Ferrari 488 Pista", date: "2024-05-10", status: "pending", amount: "$600" },
-    { id: "3", user: "Mike Ross", vehicle: "Own Vehicle", date: "2024-05-11", status: "confirmed", amount: "$150" },
-    { id: "4", user: "Sarah Connor", vehicle: "BMW M4 GT4", date: "2024-05-11", status: "checked_in", amount: "$520" },
-  ]
+export default function DashboardPage() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["admin", "analytics"],
+    queryFn: async () => {
+      const res = await api.api.v1.analytics.get();
+      if (res.error)
+        throw new Error(
+          (res.error.value as any)?.message || "Failed to load dashboard",
+        );
+      return (res.data as any)?.data;
+    },
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
+            Loading dashboard data...
+          </p>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-red-500 mt-1">
+            Failed to load dashboard: {error.message}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const stats = data?.stats || {};
+  const revenueOverview = data?.revenueOverview || {};
+  const monthlyRevenue = data?.monthlyRevenue || [];
+  const dailyBookings = data?.dailyBookings || [];
+  const statusDistribution = data?.statusDistribution || [];
+  const activeSessions = data?.activeSessions || [];
+  const topVehicles = data?.topVehicles || [];
+  const capacity = data?.capacityUtilization || {};
+
+  const bookingsGrowth =
+    Number(stats.bookings_last_month) > 0
+      ? ((Number(stats.bookings_this_month) -
+          Number(stats.bookings_last_month)) /
+          Number(stats.bookings_last_month)) *
+        100
+      : 0;
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Welcome back, Admin. Here's what's happening today.</p>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
+            Performance metrics and operational insights
+          </p>
+        </div>
+        <Badge variant="outline" className="text-xs font-mono">
+          Auto-refreshing • 30s
+        </Badge>
       </div>
 
+      {/* KPI Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, i) => (
-          <StatsCard key={i} {...stat} />
-        ))}
+        <StatsCard
+          title="Total Revenue"
+          value={formatCurrency(Number(revenueOverview.total_revenue || 0))}
+          description="All time"
+          icon={DollarSign}
+          trend={{
+            value: Number(
+              Number(revenueOverview.last_month) > 0
+                ? ((Number(revenueOverview.this_month) -
+                    Number(revenueOverview.last_month)) /
+                    Number(revenueOverview.last_month)) *
+                    100
+                : 0,
+            ),
+            label: "vs last month",
+            isPositive:
+              Number(revenueOverview.this_month) >=
+              Number(revenueOverview.last_month),
+          }}
+        />
+        <StatsCard
+          title="Bookings This Month"
+          value={stats.bookings_this_month || 0}
+          description="Active reservations"
+          icon={Calendar}
+          trend={{
+            value: Math.abs(Math.round(bookingsGrowth)),
+            label: "vs last month",
+            isPositive: bookingsGrowth >= 0,
+          }}
+        />
+        <StatsCard
+          title="Active Users"
+          value={stats.total_users || 0}
+          description={`${stats.new_users_this_month || 0} new this month`}
+          icon={Users}
+          trend={{
+            value: stats.new_users_this_month || 0,
+            label: "new users",
+            isPositive: true,
+          }}
+        />
+        <StatsCard
+          title="Capacity Utilization"
+          value={`${Number(capacity.avg_utilization_pct || 0).toFixed(0)}%`}
+          description={`${capacity.total_booked || 0} / ${capacity.total_capacity || 0} slots`}
+          icon={Gauge}
+          trend={{
+            value: Number(Number(capacity.avg_utilization_pct || 0).toFixed(0)),
+            label: "avg fill rate",
+            isPositive: Number(capacity.avg_utilization_pct || 0) > 50,
+          }}
+        />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-7">
-        {/* Recent Bookings Table Preview */}
-        <Card className="md:col-span-4">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Bookings</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">Latest activity across the circuit.</p>
-            </div>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/admin/bookings">View All</Link>
-            </Button>
+      {/* Revenue Chart */}
+      <RevenueChart data={monthlyRevenue} overview={revenueOverview} />
+
+      {/* Booking Charts */}
+      <BookingChart
+        dailyData={dailyBookings}
+        statusDistribution={statusDistribution}
+      />
+
+      {/* Bottom Section: Active Sessions + Top Vehicles */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Active Sessions */}
+        <ActiveSessions sessions={activeSessions} />
+
+        {/* Top Vehicles */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <Car className="h-4 w-4 text-gray-500" />
+              Top Vehicles
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Most booked vehicles by count
+            </p>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentBookings.map((booking) => (
-                <div key={booking.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50/50 border border-transparent hover:border-gray-200 transition-all group">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded bg-gray-100 flex items-center justify-center font-bold text-gray-500 group-hover:bg-white transition-colors">
-                      {booking.user[0]}
+            {topVehicles.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <Car className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                <p className="text-sm text-muted-foreground">
+                  No vehicle booking data yet
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {topVehicles.map((vehicle: any, index: number) => {
+                  const maxCount = topVehicles[0]?.booking_count || 1;
+                  const widthPercent =
+                    (Number(vehicle.booking_count) / maxCount) * 100;
+
+                  return (
+                    <div key={vehicle.id} className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-muted-foreground w-5">
+                            #{index + 1}
+                          </span>
+                          <span className="text-sm font-medium truncate">
+                            {vehicle.name}
+                          </span>
+                          {vehicle.model_name && (
+                            <span className="text-xs text-muted-foreground">
+                              {vehicle.model_name}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="text-sm font-bold">
+                            {vehicle.booking_count}
+                          </span>
+                          <span className="text-xs text-muted-foreground ml-1">
+                            bookings
+                          </span>
+                        </div>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gray-900 rounded-full transition-all duration-500"
+                          style={{ width: `${widthPercent}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-gray-900">{booking.user}</span>
-                      <span className="text-xs text-gray-500">{booking.vehicle}</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className="text-sm font-bold text-gray-900">{booking.amount}</span>
-                    <div className="flex items-center gap-1.5">
-                      <div className={cn(
-                        "h-1.5 w-1.5 rounded-full",
-                        booking.status === "confirmed" ? "bg-green-500" : 
-                        booking.status === "pending" ? "bg-amber-500" : "bg-blue-500"
-                      )}></div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                        {booking.status.replace("_", " ")}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
-
-        {/* Quick Actions / System Health */}
-        <div className="md:col-span-3 space-y-6">
-          <Card className="bg-black text-white border-none shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-green-400" />
-                Quick Actions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-3">
-              <Button variant="outline" className="bg-white/5 border-white/10 hover:bg-white/10 text-white h-auto py-4 flex-col gap-2" asChild>
-                <Link href="/admin/check-in">
-                  <div className="flex flex-col items-center gap-2">
-                    <QrCode className="h-5 w-5" />
-                    <span className="text-xs">Scan Ticket</span>
-                  </div>
-                </Link>
-              </Button>
-              <Button variant="outline" className="bg-white/5 border-white/10 hover:bg-white/10 text-white h-auto py-4 flex-col gap-2" asChild>
-                <Link href="/admin/schedules">
-                  <div className="flex flex-col items-center gap-2">
-                    <CalendarDays className="h-5 w-5" />
-                    <span className="text-xs">Manage Slots</span>
-                  </div>
-                </Link>
-              </Button>
-              <Button variant="outline" className="bg-white/5 border-white/10 hover:bg-white/10 text-white h-auto py-4 flex-col gap-2" asChild>
-                <Link href="/admin/vehicles/new">
-                  <div className="flex flex-col items-center gap-2">
-                    <Car className="h-5 w-5" />
-                    <span className="text-xs">Add Vehicle</span>
-                  </div>
-                </Link>
-              </Button>
-              <Button variant="outline" className="bg-white/5 border-white/10 hover:bg-white/10 text-white h-auto py-4 flex-col gap-2" asChild>
-                <Link href="/admin/settings">
-                  <div className="flex flex-col items-center gap-2">
-                    <Settings className="h-5 w-5" />
-                    <span className="text-xs">Settings</span>
-                  </div>
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-gray-400" />
-                Live Sessions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center justify-center py-6 text-center">
-                <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center mb-3">
-                  <Activity className="h-6 w-6 text-blue-500 animate-pulse" />
-                </div>
-                <h3 className="text-sm font-semibold">12 Active Drivers</h3>
-                <p className="text-xs text-muted-foreground mt-1">Current session ends in 14:25</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
-  )
+  );
 }

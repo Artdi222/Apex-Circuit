@@ -9,9 +9,13 @@ import { TimeSlotGrid } from './time-slot-grid';
 import { Loader2, ArrowRight, Calendar as CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { useSettings } from '@/hooks/use-settings';
 
 export function StepSchedule() {
   const { selectedSlotId, selectSlot, nextStep, participantsCount, setParticipantsCount } = useBookingStore();
+  const { getSetting } = useSettings();
+  const maxParticipants = getSetting('booking.max_participants', 6);
+  
   const [date, setDate] = useState<Date>(new Date());
   const [slots, setSlots] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -71,16 +75,21 @@ export function StepSchedule() {
           <h3 className="font-bold text-[#111827]">Number of Participants</h3>
           <p className="text-sm text-[#6B7280]">How many people are driving in this session?</p>
         </div>
-        <div className="flex items-center space-x-2 bg-white rounded-md border border-[#E5E7EB] p-1">
-          {[1, 2, 3, 4, 5, 6].map((num) => (
+        <div className={cn(
+          "bg-white rounded-lg border border-[#E5E7EB] p-1.5",
+          maxParticipants > 6 
+            ? "grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2" 
+            : "flex flex-wrap items-center gap-2"
+        )}>
+          {Array.from({ length: maxParticipants }, (_, i) => i + 1).map((num) => (
             <button
               key={num}
               onClick={() => setParticipantsCount(num)}
               className={cn(
-                "px-4 py-2 rounded text-sm font-bold transition-all",
+                "h-10 min-w-[40px] px-3 rounded-md text-sm font-bold transition-all flex items-center justify-center",
                 participantsCount === num
-                  ? "bg-[#1C1C1E] text-white shadow-sm"
-                  : "text-[#6B7280] hover:bg-[#F3F4F6]"
+                  ? "bg-[#1C1C1E] text-white shadow-md ring-2 ring-[#1C1C1E] ring-offset-1"
+                  : "text-[#6B7280] hover:bg-[#F3F4F6] border border-transparent hover:border-[#E5E7EB]"
               )}
             >
               {num}
