@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   LogOut,
+  AlertTriangle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -27,6 +28,7 @@ const navItems = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { name: "Bookings", href: "/admin/bookings", icon: Calendar },
   { name: "Check-in", href: "/admin/check-in", icon: QrCode },
+  { name: "Incidents", href: "/admin/incidents", icon: AlertTriangle },
   { name: "Vehicles", href: "/admin/vehicles", icon: Car },
   { name: "Equipment", href: "/admin/equipment", icon: ShieldCheck },
   { name: "Schedules", href: "/admin/schedules", icon: CalendarDays },

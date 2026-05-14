@@ -42,9 +42,6 @@ export default function DashboardOverviewPage() {
         const bookingsData = (bookingsResult as any)?.bookings ? (bookingsResult as any) : { bookings: bookingsResult, pagination: { total: Array.isArray(bookingsResult) ? bookingsResult.length : 0 } };
         const totalCount = bookingsData.pagination?.total || (bookingsData.bookings?.length || 0);
         
-        console.log('Upcoming bookings count:', upcomingBookings.length);
-        console.log('Total bookings count:', totalCount);
-        
         setStats({
           upcoming: upcomingBookings.length,
           total: totalCount,
