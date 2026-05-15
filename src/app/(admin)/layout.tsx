@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 import { Logo } from "@/components/shared/logo"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const navItems = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -120,9 +121,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
         <div className="p-4 mt-auto border-t border-white/10 bg-white/[0.02]">
           <div className="flex items-center gap-3 px-3 py-4 mb-4">
-            <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white font-semibold">
-              {user.username?.[0]?.toUpperCase() || "U"}
-            </div>
+            <Avatar className="h-9 w-9 border-2 border-white/20 shadow-sm">
+              <AvatarImage 
+                src={user?.avatar_url ? (user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/uploads/${user.avatar_url}`) : ''} 
+                alt={user.username} 
+              />
+              <AvatarFallback className="bg-white/10 text-white font-semibold">
+                {user.username?.[0]?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-medium text-white truncate">{user.username}</span>
               <span className="text-[10px] text-white/40 font-bold uppercase tracking-wider">{user.role}</span>

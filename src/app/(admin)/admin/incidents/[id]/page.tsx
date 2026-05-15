@@ -22,6 +22,7 @@ import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import { getImageUrl } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 type IncidentStatus = 'open' | 'investigating' | 'resolved' | 'dismissed';
 
@@ -45,9 +46,9 @@ interface Incident {
   police_report_number?: string | null;
   witnesses?: Array<{ name: string; contact?: string; statement: string; added_at: string }>;
   created_at: string;
-  created_by_user?: { username: string };
+  created_by_user?: { username: string; avatar_url?: string | null };
   booking?: { id: string };
-  booking_user?: { username: string; email: string };
+  booking_user?: { username: string; email: string; avatar_url?: string | null };
 }
 
 function parseJsonArray(val: any): string[] {
@@ -278,8 +279,16 @@ export default function AdminIncidentDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-3">
+                <Avatar className="h-9 w-9 border border-gray-200 shadow-sm">
+                  <AvatarImage 
+                    src={incident.booking_user?.avatar_url ? (incident.booking_user.avatar_url.startsWith('http') ? incident.booking_user.avatar_url : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/uploads/${incident.booking_user.avatar_url}`) : ''} 
+                    alt={incident.booking_user?.username} 
+                  />
+                  <AvatarFallback className="bg-gray-100 text-gray-600 font-bold">
+                    {incident.booking_user?.username?.charAt(0).toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
                 <div>
                   <p className="text-sm font-medium">{incident.booking_user?.username || 'Unknown'}</p>
                   <p className="text-xs text-muted-foreground">{incident.booking_user?.email}</p>

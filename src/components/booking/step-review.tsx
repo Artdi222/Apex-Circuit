@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 
 export function StepReview() {
@@ -31,6 +32,7 @@ export function StepReview() {
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState('card');
+  const [bookingNotes, setBookingNotes] = useState('');
 
   useEffect(() => {
     async function fetchDetails() {
@@ -95,6 +97,7 @@ export function StepReview() {
           equipment_id: e.id,
           quantity: e.quantity
         })),
+        notes: bookingNotes,
         agreement_accepted: true
       };
 
@@ -245,6 +248,18 @@ export function StepReview() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Notes Section */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold text-[#111827] uppercase tracking-wider">Additional Notes (Optional)</h3>
+            <Textarea
+              value={bookingNotes}
+              onChange={(e) => setBookingNotes(e.target.value)}
+              placeholder="Any special requests, medical conditions, or other details we should know about?"
+              className="resize-none border-[#E5E7EB] focus-visible:ring-[#2563EB]"
+              rows={3}
+            />
           </div>
 
           {/* Payment Method Section */}

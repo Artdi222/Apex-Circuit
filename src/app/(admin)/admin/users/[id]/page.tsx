@@ -32,6 +32,7 @@ import { toast } from "sonner"
 import { format } from "date-fns"
 import Link from "next/link"
 import { useState } from "react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const ROLE_CONFIG: Record<string, { label: string; color: string }> = {
   superadmin: {
@@ -146,17 +147,16 @@ export default function AdminUserDetailPage() {
           <div className="flex flex-col md:flex-row items-start gap-6">
             {/* Avatar */}
             <div className="relative">
-              <div className="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-600 shrink-0">
-                {user.avatar_url ? (
-                  <img
-                    src={user.avatar_url}
-                    alt={user.username}
-                    className="h-20 w-20 rounded-full object-cover"
-                  />
-                ) : (
-                  user.username?.[0]?.toUpperCase() || "?"
-                )}
-              </div>
+              <Avatar className="h-20 w-20 border-4 border-white shadow-lg shrink-0">
+                <AvatarImage 
+                  src={user.avatar_url ? (user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/uploads/${user.avatar_url}`) : ''} 
+                  alt={user.username} 
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-gray-100 text-2xl font-bold text-gray-600">
+                  {user.username?.[0]?.toUpperCase() || "?"}
+                </AvatarFallback>
+              </Avatar>
               <div
                 className={cn(
                   "absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-3 border-white",

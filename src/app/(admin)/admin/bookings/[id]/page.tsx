@@ -13,6 +13,7 @@ import { toast } from "sonner"
 import { Separator } from "@/components/ui/separator"
 import { unwrap } from "@/lib/api"
 import { Label } from "@/components/ui/label"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function AdminBookingDetailPage() {
   const { id } = useParams()
@@ -129,9 +130,16 @@ export default function AdminBookingDetailPage() {
               <CardTitle>Driver Profile</CardTitle>
             </CardHeader>
             <CardContent className="flex items-center gap-6">
-              <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-400">
-                {booking.user?.username?.[0] || "U"}
-              </div>
+              <Avatar className="h-16 w-16 border-2 border-gray-100 shadow-sm shrink-0">
+                <AvatarImage 
+                  src={booking.user?.avatar_url ? (booking.user.avatar_url.startsWith('http') ? booking.user.avatar_url : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/uploads/${booking.user.avatar_url}`) : ''} 
+                  alt={booking.user?.username} 
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-gray-100 text-2xl font-bold text-gray-400">
+                  {booking.user?.username?.[0]?.toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
               <div className="grid grid-cols-2 flex-1 gap-4">
                 <div>
                   <Label className="text-[10px] text-muted-foreground uppercase font-bold">Name</Label>

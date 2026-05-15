@@ -1,13 +1,20 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Logo } from '@/components/shared/logo';
-import { Menu, User as UserIcon, LogOut, LayoutDashboard, X, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Logo } from "@/components/shared/logo";
+import {
+  Menu,
+  User as UserIcon,
+  LogOut,
+  LayoutDashboard,
+  X,
+  ChevronRight,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,14 +22,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navLinks = [
-  { name: 'Home', href: '/' },
-  { name: 'Vehicles', href: '/vehicles' },
-  { name: 'Equipment', href: '/equipment' },
-  { name: 'Schedule', href: '/schedule' },
+  { name: "Home", href: "/" },
+  { name: "Vehicles", href: "/vehicles" },
+  { name: "Equipment", href: "/equipment" },
+  { name: "Schedule", href: "/schedule" },
 ];
 
 export function Navbar() {
@@ -37,15 +44,15 @@ export function Navbar() {
     }
   }, [isInitialized, refreshUser]);
 
-  const isHeroPage = pathname === '/';
+  const isHeroPage = pathname === "/";
   const isTransparent = isHeroPage && !isScrolled;
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 80);
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -53,21 +60,25 @@ export function Navbar() {
   }, [pathname]);
 
   return (
-    <header 
+    <header
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b",
         isTransparent
           ? "bg-transparent border-transparent backdrop-blur-none"
-          : "bg-white/95 border-gray-200 shadow-sm backdrop-blur-xl"
+          : "bg-white/95 border-gray-200 shadow-sm backdrop-blur-xl",
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="transition-all">
-            <Logo 
+            <Logo
               size="md"
-              textClassName={isTransparent ? "text-white group-hover:text-white/80" : undefined}
+              textClassName={
+                isTransparent
+                  ? "text-white group-hover:text-white/80"
+                  : undefined
+              }
             />
           </Link>
 
@@ -87,64 +98,99 @@ export function Navbar() {
                         : "text-white/80 hover:text-white hover:bg-white/10"
                       : isActive
                         ? "text-blue-600 bg-blue-50/50"
-                        : "text-gray-600 hover:text-blue-600 hover:bg-gray-50/50"
+                        : "text-gray-600 hover:text-blue-600 hover:bg-gray-50/50",
                   )}
                 >
                   {link.name}
                   {isActive && (
-                    <span className={cn(
-                      "absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full",
-                      isTransparent ? "bg-white" : "bg-blue-600"
-                    )} />
+                    <span
+                      className={cn(
+                        "absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full",
+                        isTransparent ? "bg-white" : "bg-blue-600",
+                      )}
+                    />
                   )}
                 </Link>
               );
             })}
           </nav>
 
-            {/* Auth & Mobile Toggle */}
+          {/* Auth & Mobile Toggle */}
           <div className="flex items-center gap-3">
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className={cn(
-                    "relative h-10 w-10 rounded-xl p-0 transition-colors",
-                    isTransparent ? "hover:bg-white/10" : "hover:bg-gray-100/50"
-                  )}>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "relative h-10 w-10 rounded-xl p-0 transition-colors",
+                      isTransparent
+                        ? "hover:bg-white/10"
+                        : "hover:bg-gray-100/50",
+                    )}
+                  >
                     <Avatar className="h-9 w-9 border-2 border-white shadow-sm">
-                      <AvatarImage src={user.avatar_url || ''} alt={user.username} />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-500 text-white font-bold">
-                        {user.username.substring(0, 2).toUpperCase()}
+                      <AvatarImage
+                        src={
+                          user?.avatar_url
+                            ? user.avatar_url.startsWith("http")
+                              ? user.avatar_url
+                              : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/uploads/${user.avatar_url}`
+                            : ""
+                        }
+                        alt={user.username}
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="bg-[#2563EB]/10 text-[#2563EB] font-bold">
+                        {user.username.charAt(0).toUpperCase() || "U"}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64 p-2 rounded-2xl shadow-xl border-gray-100" align="end" sideOffset={12}>
+                <DropdownMenuContent
+                  className="w-64 p-2 rounded-2xl shadow-xl border-gray-100"
+                  align="end"
+                  sideOffset={12}
+                >
                   <DropdownMenuLabel className="p-3">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-semibold text-gray-900">{user.username}</p>
-                      <p className="text-xs text-gray-500 font-medium truncate">{user.email}</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {user.username}
+                      </p>
+                      <p className="text-xs text-gray-500 font-medium truncate">
+                        {user.email}
+                      </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-gray-50" />
                   <div className="p-1 space-y-1">
-                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-2.5">
+                    <DropdownMenuItem
+                      asChild
+                      className="rounded-xl cursor-pointer py-2.5"
+                    >
                       <Link href="/dashboard" className="flex items-center">
                         <LayoutDashboard className="mr-3 h-4 w-4 text-gray-500" />
-                        <span className="font-medium text-gray-700">Dashboard</span>
+                        <span className="font-medium text-gray-700">
+                          Dashboard
+                        </span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-2.5">
+                    <DropdownMenuItem
+                      asChild
+                      className="rounded-xl cursor-pointer py-2.5"
+                    >
                       <Link href="/profile" className="flex items-center">
                         <UserIcon className="mr-3 h-4 w-4 text-gray-500" />
-                        <span className="font-medium text-gray-700">My Profile</span>
+                        <span className="font-medium text-gray-700">
+                          My Profile
+                        </span>
                       </Link>
                     </DropdownMenuItem>
                   </div>
                   <DropdownMenuSeparator className="bg-gray-50" />
                   <div className="p-1">
-                    <DropdownMenuItem 
-                      onClick={() => logout()} 
+                    <DropdownMenuItem
+                      onClick={() => logout()}
                       className="rounded-xl cursor-pointer py-2.5 text-red-600 focus:bg-red-50 focus:text-red-600"
                     >
                       <LogOut className="mr-3 h-4 w-4" />
@@ -155,38 +201,55 @@ export function Navbar() {
               </DropdownMenu>
             ) : (
               <div className="hidden sm:flex items-center gap-2">
-                <Button variant="ghost" asChild className={cn(
-                  "rounded-xl font-semibold transition-all",
-                  isTransparent
-                    ? "text-white/90 hover:text-white hover:bg-white/10"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50/50"
-                )}>
+                <Button
+                  variant="ghost"
+                  asChild
+                  className={cn(
+                    "rounded-xl font-semibold transition-all",
+                    isTransparent
+                      ? "text-white/90 hover:text-white hover:bg-white/10"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50/50",
+                  )}
+                >
                   <Link href="/login">Sign In</Link>
                 </Button>
-                <Button className={cn(
-                  "rounded-xl px-6 transition-all shadow-md active:scale-95 font-semibold",
-                  isTransparent
-                    ? "bg-white text-gray-900 hover:bg-white/90"
-                    : "bg-gray-900 hover:bg-gray-800"
-                )} asChild>
+                <Button
+                  className={cn(
+                    "rounded-xl px-6 transition-all shadow-md active:scale-95 font-semibold",
+                    isTransparent
+                      ? "bg-white text-gray-900 hover:bg-white/90"
+                      : "bg-gray-900 hover:bg-gray-800",
+                  )}
+                  asChild
+                >
                   <Link href="/register">Join Now</Link>
                 </Button>
               </div>
             )}
 
             {/* Mobile Menu Toggle */}
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className={cn(
                 "lg:hidden h-10 w-10 p-0 rounded-xl",
-                isTransparent ? "hover:bg-white/10" : "hover:bg-gray-100/50"
+                isTransparent ? "hover:bg-white/10" : "hover:bg-gray-100/50",
               )}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
-                <X className={cn("h-6 w-6", isTransparent ? "text-white" : "text-gray-900")} />
+                <X
+                  className={cn(
+                    "h-6 w-6",
+                    isTransparent ? "text-white" : "text-gray-900",
+                  )}
+                />
               ) : (
-                <Menu className={cn("h-6 w-6", isTransparent ? "text-white" : "text-gray-900")} />
+                <Menu
+                  className={cn(
+                    "h-6 w-6",
+                    isTransparent ? "text-white" : "text-gray-900",
+                  )}
+                />
               )}
             </Button>
           </div>
@@ -206,22 +269,34 @@ export function Navbar() {
                     href={link.href}
                     className={cn(
                       "flex items-center justify-between p-4 rounded-2xl transition-all",
-                      isActive 
-                        ? "bg-blue-50 text-blue-600" 
-                        : "text-gray-600 hover:bg-gray-50"
+                      isActive
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-gray-600 hover:bg-gray-50",
                     )}
                   >
                     <span className="font-bold text-lg">{link.name}</span>
-                    <ChevronRight className={cn("h-5 w-5", isActive ? "text-blue-600" : "text-gray-300")} />
+                    <ChevronRight
+                      className={cn(
+                        "h-5 w-5",
+                        isActive ? "text-blue-600" : "text-gray-300",
+                      )}
+                    />
                   </Link>
                 );
               })}
               {!user && (
                 <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 gap-3">
-                  <Button variant="outline" asChild className="rounded-2xl h-14 font-bold border-gray-200">
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="rounded-2xl h-14 font-bold border-gray-200"
+                  >
                     <Link href="/login">Sign In</Link>
                   </Button>
-                  <Button asChild className="rounded-2xl h-14 font-bold bg-gray-900 hover:bg-gray-800">
+                  <Button
+                    asChild
+                    className="rounded-2xl h-14 font-bold bg-gray-900 hover:bg-gray-800"
+                  >
                     <Link href="/register">Join Now</Link>
                   </Button>
                 </div>

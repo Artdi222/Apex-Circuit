@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { format } from "date-fns"
 import Link from "next/link"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface User {
   id: string
@@ -249,17 +250,16 @@ export default function AdminUsersPage() {
                             href={`/admin/users/${user.id}`}
                             className="flex items-center gap-3 group"
                           >
-                            <div className="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-600 shrink-0 group-hover:bg-black group-hover:text-white transition-colors">
-                              {user.avatar_url ? (
-                                <img
-                                  src={user.avatar_url}
-                                  alt={user.username}
-                                  className="h-9 w-9 rounded-full object-cover"
-                                />
-                              ) : (
-                                user.username?.[0]?.toUpperCase() || "?"
-                              )}
-                            </div>
+                            <Avatar className="h-9 w-9 border border-gray-200 shadow-sm shrink-0 group-hover:border-black transition-colors">
+                              <AvatarImage 
+                                src={user.avatar_url ? (user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/uploads/${user.avatar_url}`) : ''} 
+                                alt={user.username} 
+                                className="object-cover"
+                              />
+                              <AvatarFallback className="bg-gray-100 text-gray-600 font-bold group-hover:bg-black group-hover:text-white transition-colors">
+                                {user.username?.[0]?.toUpperCase() || "?"}
+                              </AvatarFallback>
+                            </Avatar>
                             <div>
                               <p className="text-sm font-semibold text-gray-900 group-hover:underline">
                                 {user.username}
@@ -373,9 +373,16 @@ export default function AdminUsersPage() {
           {selectedUser && (
             <div className="space-y-4 py-2">
               <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600">
-                  {selectedUser.username?.[0]?.toUpperCase() || "?"}
-                </div>
+                <Avatar className="h-10 w-10 border border-gray-200">
+                  <AvatarImage 
+                    src={selectedUser.avatar_url ? (selectedUser.avatar_url.startsWith('http') ? selectedUser.avatar_url : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/v1/uploads/${selectedUser.avatar_url}`) : ''} 
+                    alt={selectedUser.username} 
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-gray-200 text-gray-600 font-bold">
+                    {selectedUser.username?.[0]?.toUpperCase() || "?"}
+                  </AvatarFallback>
+                </Avatar>
                 <div>
                   <p className="font-semibold text-sm">{selectedUser.username}</p>
                   <p className="text-xs text-muted-foreground">{selectedUser.email}</p>

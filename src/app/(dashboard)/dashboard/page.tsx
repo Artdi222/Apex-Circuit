@@ -176,13 +176,13 @@ export default function DashboardOverviewPage() {
               </Link>
             </Button>
             <Button variant="ghost" asChild className="justify-start h-auto py-3 px-4 hover:bg-[#F1F3F5]">
-              <Link href="/incidents/new" className="flex items-center">
+              <Link href="/incidents" className="flex items-center">
                 <div className="h-8 w-8 rounded bg-red-50 flex items-center justify-center mr-3">
                   <ShieldCheck className="h-4 w-4 text-[#DC2626]" />
                 </div>
                 <div className="text-left">
-                  <p className="text-sm font-bold text-[#111827]">Report Damage</p>
-                  <p className="text-xs text-[#6B7280]">File an incident report</p>
+                  <p className="text-sm font-bold text-[#111827]">View Your Incidents</p>
+                  <p className="text-xs text-[#6B7280]">Check status of submitted incident reports</p>
                 </div>
               </Link>
             </Button>
