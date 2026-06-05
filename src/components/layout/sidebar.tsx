@@ -18,7 +18,6 @@ import {
   LogOut,
   PlusCircle,
 } from "lucide-react";
-import { Logo } from "@/components/shared/logo";
 import { useAuth } from "@/hooks/use-auth";
 
 const menuItems = [
@@ -48,11 +47,19 @@ export function Sidebar() {
         )}
       >
         <Link href="/" className="flex items-center transition-all">
-          <Logo
-            size="lg"
-            showText={isSidebarOpen}
-            textClassName="text-white group-hover:text-blue-400"
-          />
+          <div className="flex items-center gap-3 select-none">
+            <img src="/Logo.svg" alt="Apex Circuit Logo" className="h-10 w-10" />
+            {isSidebarOpen && (
+              <div className="flex flex-col -space-y-1.5 whitespace-nowrap animate-in fade-in duration-300">
+                <span className="text-3xl font-black tracking-tighter italic text-white group-hover:text-blue-400 transition-colors">
+                  APEX
+                </span>
+                <span className="text-[10px] font-bold tracking-[0.4em] uppercase ml-0.5 text-white/60">
+                  CIRCUIT
+                </span>
+              </div>
+            )}
+          </div>
         </Link>
       </div>
 

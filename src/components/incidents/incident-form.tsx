@@ -12,6 +12,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Upload, X } from 'lucide-react';
 import { api } from '@/lib/api';
 
+import { toast } from 'sonner';
+
 type IncidentType = 'damage' | 'accident' | 'mechanical' | 'other';
 type IncidentSeverity = 'low' | 'medium' | 'high' | 'critical';
 
@@ -72,8 +74,20 @@ export function IncidentForm({ bookingId, onSuccess, onCancel }: IncidentFormPro
     const files = e.target.files;
     if (!files) return;
     const newFiles = Array.from(files);
-    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
-    setPhotoFiles((prev) => [...prev, ...newFiles]);
+    
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    const validFiles = newFiles.filter((file) => file.size <= MAX_SIZE);
+    
+    if (validFiles.length < newFiles.length) {
+      const msg = 'Some photos were not added because they exceed the 10MB limit.';
+      setError(msg);
+      toast.error(msg);
+    }
+    
+    if (validFiles.length === 0) return;
+    
+    const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
+    setPhotoFiles((prev) => [...prev, ...validFiles]);
     setPhotoPreviews((prev) => [...prev, ...newPreviews]);
   };
 

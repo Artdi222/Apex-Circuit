@@ -14,10 +14,16 @@ import { UserCircle, Mail, Phone, Save, Loader2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { api, unwrap } from '@/lib/api';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 
 const profileSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
-  phone: z.string().optional(),
+  phone: z.string()
+    .refine((val) => !val || /^\+?[0-9\s\-()]{7,20}$/.test(val), {
+      message: 'Please enter a valid phone number (7-20 digits, optionally starting with +)',
+    })
+    .optional()
+    .or(z.literal('')),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -30,6 +36,7 @@ export default function ProfilePage() {
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
+    mode: 'onChange',
     defaultValues: {
       username: '',
       phone: '',
@@ -215,25 +222,35 @@ export default function ProfilePage() {
                   <FormField
                     control={form.control}
                     name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-[#111827] font-medium">Phone Number</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Phone className="absolute left-3 top-2.5 h-4 w-4 text-[#9CA3AF]" />
-                            <Input 
-                              placeholder="+1 (555) 000-0000" 
-                              className="pl-9 border-[#D1D5DB] focus:border-[#2563EB] focus:ring-[#2563EB]" 
-                              {...field} 
-                            />
-                          </div>
-                        </FormControl>
-                        <FormDescription>
-                          Used for important account notifications and emergency contact.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      const hasError = !!form.formState.errors.phone;
+                      return (
+                        <FormItem>
+                          <FormLabel className="text-[#111827] font-medium">Phone Number</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Phone className={cn(
+                                "absolute left-3 top-2.5 h-4 w-4 transition-colors",
+                                hasError ? "text-destructive" : "text-[#9CA3AF]"
+                              )} />
+                              <Input 
+                                type="tel"
+                                placeholder="+1 (555) 000-0000" 
+                                className={cn(
+                                  "pl-9 border-[#D1D5DB] focus:border-[#2563EB] focus:ring-[#2563EB]",
+                                  hasError && "border-destructive focus-visible:ring-destructive focus:border-destructive"
+                                )} 
+                                {...field} 
+                              />
+                            </div>
+                          </FormControl>
+                          <FormDescription>
+                            Used for important account notifications and emergency contact.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
 
                   <div className="flex justify-end pt-4 border-t border-[#E5E7EB]">

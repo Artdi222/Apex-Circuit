@@ -22,7 +22,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-import { Logo } from "@/components/shared/logo"
+// Removed Logo import
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const navItems = [
@@ -71,7 +71,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       {/* Mobile Nav Header */}
       <div className="md:hidden flex items-center justify-between p-4 bg-black text-white">
         <div className="flex items-center gap-2">
-          <Logo size="sm" textClassName="text-white" />
+          <div className="flex items-center gap-3 select-none">
+            <img src="/Logo.svg" alt="Apex Circuit Logo" className="h-6 w-6" />
+            <div className="flex flex-col -space-y-1.5 whitespace-nowrap">
+              <span className="text-lg font-black tracking-tighter italic text-white">APEX</span>
+              <span className="text-[10px] font-bold tracking-[0.4em] uppercase ml-0.5 text-white/60">CIRCUIT</span>
+            </div>
+          </div>
         </div>
         <Button
           variant="ghost"
@@ -91,7 +97,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         )}
       >
         <div className="p-6 flex flex-col gap-1 border-b border-white/10">
-          <Logo size="lg" textClassName="text-white" />
+          <div className="flex items-center gap-3 select-none">
+            <img src="/Logo.svg" alt="Apex Circuit Logo" className="h-10 w-10" />
+            <div className="flex flex-col -space-y-1.5 whitespace-nowrap">
+              <span className="text-3xl font-black tracking-tighter italic text-white">APEX</span>
+              <span className="text-[10px] font-bold tracking-[0.4em] uppercase ml-0.5 text-white/60">CIRCUIT</span>
+            </div>
+          </div>
           <span className="text-[10px] text-white/30 font-bold uppercase tracking-[0.4em] ml-[52px]">Management</span>
         </div>
 

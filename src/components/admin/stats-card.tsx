@@ -41,7 +41,7 @@ export function StatsCard({
                 }`}
               >
                 {trend.isPositive ? "+" : ""}
-                {trend.value}%
+                {Number(trend.value.toFixed(1))}%
               </span>
             )}
             {description && (

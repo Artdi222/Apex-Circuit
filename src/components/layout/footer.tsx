@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import { Logo } from "@/components/shared/logo";
 import { useSettings } from "@/hooks/use-settings";
 
 export function Footer() {
@@ -20,7 +19,13 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-2">
             <div className="mb-6">
-              <Logo size="sm" />
+              <div className="flex items-center gap-3 select-none">
+                <img src="/Logo.svg" alt="Apex Circuit Logo" className="h-6 w-6" />
+                <div className="flex flex-col -space-y-1.5 whitespace-nowrap">
+                  <span className="text-lg font-black tracking-tighter italic text-gray-900">APEX</span>
+                  <span className="text-[10px] font-bold tracking-[0.4em] uppercase ml-0.5 text-blue-600/60">CIRCUIT</span>
+                </div>
+              </div>
             </div>
             <p className="text-gray-500 max-w-sm leading-relaxed text-sm">
               {siteDesc}

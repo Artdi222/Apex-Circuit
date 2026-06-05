@@ -33,12 +33,14 @@ import {
   Mail,
   Phone,
   Calendar,
+  Trash2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { format } from "date-fns"
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ConfirmDialog } from "@/components/shared/confirm-dialog"
 
 interface User {
   id: string
@@ -79,6 +81,7 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [showRoleDialog, setShowRoleDialog] = useState(false)
   const [newRole, setNewRole] = useState<string>("")
+  const [deleteUserId, setDeleteUserId] = useState<string | null>(null)
 
   const { data: usersData, isLoading } = useQuery({
     queryKey: ["admin", "users", roleFilter, statusFilter],
@@ -120,6 +123,22 @@ export default function AdminUsersPage() {
       setShowRoleDialog(false)
       setSelectedUser(null)
       toast.success("User role updated successfully")
+    },
+    onError: (error: Error) => {
+      toast.error(error.message)
+    },
+  })
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const res = await api.api.v1.users({ id: userId }).delete()
+      if (res.error) throw new Error((res.error.value as any)?.message || "Failed to delete user")
+      return res.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] })
+      setDeleteUserId(null)
+      toast.success("User deleted successfully")
     },
     onError: (error: Error) => {
       toast.error(error.message)
@@ -342,6 +361,17 @@ export default function AdminUsersPage() {
                                 Role
                               </Button>
                             )}
+                            {currentUser?.role === "superadmin" && user.id !== currentUser?.id && (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                className="h-7 text-xs bg-red-600 hover:bg-red-750 text-white"
+                                onClick={() => setDeleteUserId(user.id)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5 mr-1" />
+                                Delete
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
@@ -424,6 +454,18 @@ export default function AdminUsersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteUserId}
+        onOpenChange={(open) => !open && setDeleteUserId(null)}
+        onConfirm={async () => {
+          if (deleteUserId) {
+            await deleteUserMutation.mutateAsync(deleteUserId)
+          }
+        }}
+        title="Delete User"
+        description="Are you sure you want to delete this user? This action is permanent and cannot be undone."
+      />
     </div>
   )
 }

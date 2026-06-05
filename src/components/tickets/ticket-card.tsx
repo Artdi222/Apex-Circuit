@@ -7,7 +7,6 @@ import { QRDisplay } from './qr-display';
 import { Download, Calendar, Clock, Car, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { Logo } from '../shared/logo';
 import { StatusBadge } from '../shared/status-badge';
 
 export type BookingStatus = 'pending' | 'confirmed' | 'checked_in' | 'completed' | 'cancelled' | 'no_show';
@@ -94,7 +93,7 @@ export function TicketCard({ booking }: TicketCardProps) {
     <Card className="w-full max-w-2xl overflow-hidden border-2 border-slate-200">
       <div className="bg-slate-900 text-white p-6 flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <Logo size="md" showText={false} iconClassName="brightness-125" />
+          <img src="/Logo.svg" alt="Apex Circuit Logo" className="h-8 w-8" />
           <div>
             <h2 className="text-2xl font-bold tracking-tight">APEX CIRCUIT</h2>
             <p className="text-slate-400 text-sm font-mono uppercase">Official Entrance Pass</p>

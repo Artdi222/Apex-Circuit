@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Logo } from "@/components/shared/logo";
 import {
   Menu,
   User as UserIcon,
@@ -72,14 +71,17 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="transition-all">
-            <Logo
-              size="md"
-              textClassName={
-                isTransparent
-                  ? "text-white group-hover:text-white/80"
-                  : undefined
-              }
-            />
+            <div className="flex items-center gap-3 select-none">
+              <img src="/Logo.svg" alt="Apex Circuit Logo" className="h-8 w-8 transition-all" />
+              <div className="flex flex-col -space-y-1.5 whitespace-nowrap">
+                <span className={cn("text-xl font-black tracking-tighter italic transition-colors duration-300", isTransparent ? "text-white group-hover:text-white/80" : "text-gray-900")}>
+                  APEX
+                </span>
+                <span className={cn("text-[10px] font-bold tracking-[0.4em] uppercase ml-0.5", isTransparent ? "text-white/60" : "text-blue-600/60")}>
+                  CIRCUIT
+                </span>
+              </div>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
